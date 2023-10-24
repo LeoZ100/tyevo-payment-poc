@@ -1,8 +1,30 @@
-'use client';
+'use client'
 import React from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 
-export default function CreditCardForm() {
+const CARD_ELEMENT_OPTIONS = {
+  style: {
+    base: {
+      color: "#32325d",
+      fontFamily: '"Helvetica Neue", Helvetica, sans-serif',
+      fontSmoothing: "antialiased",
+      fontSize: "16px",
+      "::placeholder": {
+        color: "#aab7c4"
+      }
+    },
+    invalid: {
+      color: "#fa755a",
+      iconColor: "#fa755a"
+    }
+  }
+};
+
+type CreditCardFormProps = {
+    updatePaymentInformation: () => void;
+};
+
+export default function CreditCardForm({ updatePaymentInformation }: CreditCardFormProps) {
   const stripe = useStripe();
   const elements = useElements();
 
@@ -23,18 +45,26 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     if (result.error) {
         console.error(result.error.message);
     } else {
-        console.log(result.token);
-        // Save in client state for later use (only for demo)
-        
+        localStorage.setItem('payment_token_id', result.token.id);
+        console.log('Payment Method ID saved locally:', result.token.id);
+        updatePaymentInformation();
+
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <CardElement />
-      <button type="submit" disabled={!stripe} className="mt-4 bg-blue-500 text-white px-4 py-2 rounded-lg">
-        Save Card
-      </button>
-    </form>
+    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto mt-4">
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <div className="border p-2 rounded">
+          <CardElement options={CARD_ELEMENT_OPTIONS} />
+        </div>
+        <button 
+          type="submit" 
+          disabled={!stripe} 
+          className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+          Save Card
+        </button>
+      </form>
+    </div>
   );
 }

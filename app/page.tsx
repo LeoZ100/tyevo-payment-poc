@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import Image from 'next/image';
+import Image from "next/image";
 
 export default function Home() {
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <div className="text-center mb-4">
@@ -14,7 +15,7 @@ export default function Home() {
         />
       </div>
       <div className="text-center">
-        <h1 className="text-4xl mb-4">Ride Sharing App</h1>
+        <h1 className="text-4xl mb-4">Payments Test</h1>
         <p className="mb-8">A mockup application to test Stripe payments</p>
       </div>
       <div className="flex space-x-4">
