@@ -1,6 +1,6 @@
-'use client'
 import React from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
+import { StripeCardElementChangeEvent } from '@stripe/stripe-js';
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -21,17 +21,18 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 type CreditCardFormProps = {
-    updatePaymentInformation: () => void;
+    updatePaymentInformation: (event:StripeCardElementChangeEvent) => void;
 };
 
 export default function CreditCardForm({ updatePaymentInformation }: CreditCardFormProps) {
-  const stripe = useStripe();
+ 
+  const stripePromise = useStripe();
   const elements = useElements();
 
 const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
 
-    if (!stripe || !elements) {
+    if (!stripePromise || !elements) {
         return;
     }
 
@@ -41,14 +42,12 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         return;
     }
 
-    const result = await stripe.createToken(cardElement);
+    const result = await stripePromise.createToken(cardElement);
     if (result.error) {
         console.error(result.error.message);
     } else {
         localStorage.setItem('payment_token_id', result.token.id);
         console.log('Payment Method ID saved locally:', result.token.id);
-        updatePaymentInformation();
-
     }
   };
 
@@ -60,7 +59,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         </div>
         <button 
           type="submit" 
-          disabled={!stripe} 
+          disabled={!stripePromise} 
           className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Save Card
         </button>
