@@ -34,7 +34,7 @@ export default function RidePage() {
             return;
         }
 
-        const amount = getStripe(formAmount, currency);
+        const amount = getStripe(formAmount!, currency);
 
         try {
             const response = await fetch('/api/charge-customer', {
@@ -79,7 +79,7 @@ export default function RidePage() {
                     <div className="bg-white p-8 mt-8 rounded-lg shadow-lg w-full max-w-md text-center">
                         <h2 className="text-xl font-bold mb-4">Ride Complete!</h2>
                         <p>Your card has been charged successfully.</p>
-                        <p>Please check the <a href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for transaction details.</p>
+                        <p>Please check the <a className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for transaction details.</p>
                     </div>
                 )
             }
@@ -93,9 +93,10 @@ export default function RidePage() {
                         <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount to Charge</label>
                         <input
                             id="amount"
+                            min="0"
                             type="number"
                             disabled={loading}
-                            value={formAmount}
+                            value={formAmount || ''}
                             onChange={(e) => {
                                 setRideComplete(false);
                                 setFormAmount(+e.target.value)
@@ -120,7 +121,7 @@ export default function RidePage() {
 
                 <button
                     className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 disabled:bg-gray-300"
-                    disabled={loading}
+                    disabled={loading || formAmount === 0}
                     onClick={initiateRideAnimation}>
                     Take Ride
                 </button>
