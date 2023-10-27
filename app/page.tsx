@@ -1,10 +1,16 @@
 'use client'
 import Link from 'next/link';
 import Image from "next/image";
-import {Suspense} from "react";
+import {Suspense, useEffect, useState} from "react";
 import Loading from "@/app/loading";
 
 export default function Home() {
+  const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(true);
+
+  useEffect(() => {
+    const paymentMethodId = localStorage.getItem('payment_token_id');
+    setIsPaymentMethodSaved(!!paymentMethodId);
+  }, []);
 
   return (
       <Suspense fallback={<Loading/>}>
@@ -26,8 +32,8 @@ export default function Home() {
             <Link href="wallet">
               <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Wallet</button>
             </Link>
-            <Link href="ride">
-              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Take Ride</button>
+            <Link href={isPaymentMethodSaved ? "/ride": "#"}>
+              <button className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:bg-gray-300" disabled={!isPaymentMethodSaved}>Take Ride</button>
             </Link>
           </div>
         </div>
