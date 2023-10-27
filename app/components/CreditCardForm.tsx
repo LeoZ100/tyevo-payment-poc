@@ -1,6 +1,5 @@
 import React from 'react';
-import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
-import { StripeCardElementChangeEvent } from '@stripe/stripe-js';
+import {CardElement, useElements, useStripe} from '@stripe/react-stripe-js';
 import {generate} from "random-words";
 import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
 
@@ -61,11 +60,13 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         return;
     }
 
+    localStorage.setItem('payment_token_id', result.setupIntent?.payment_method?.toString()!);
+    console.log("Card information updated and saved.");
     updatePaymentInformation(result);
   };
 
   return (
-    <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md mx-auto mt-4">
+    <div>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="border p-2 rounded">
           <CardElement options={CARD_ELEMENT_OPTIONS} />

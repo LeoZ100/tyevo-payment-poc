@@ -1,14 +1,26 @@
 'use client'
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { Elements } from '@stripe/react-stripe-js';
+import {Elements} from '@stripe/react-stripe-js';
 import CreditCardForm from '../components/CreditCardForm';
-import { StripeCardElementChangeEvent, loadStripe } from '@stripe/stripe-js';
+import {loadStripe} from '@stripe/stripe-js';
 import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
-import {Stripe} from "stripe";
+import {useRouter} from "next/navigation";
+import CardComponent from "@/app/components/CardComponent";
 
 export default function WalletPage() {
     const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(false);
+    const [creditCardInfo, setCreditCardInfo] = useState({
+        cardNumber: '',
+        cardType: '',
+        expirationYear: '',
+        billingName: ''
+    });
+    const [loading, setLoading] = useState(false)
+    const router = useRouter();  // useRouter hook initialization
+
+
+    // Stripe
     const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!);
 
     useEffect(() => {
@@ -25,9 +37,11 @@ export default function WalletPage() {
         localStorage.removeItem('customer_id');
         localStorage.removeItem('customer_client_secret');
         setIsPaymentMethodSaved(false);
+        router.back();
     };
 
     function updatePaymentInformation(setupResult: SetupIntentResult) {
+        setLoading(true);
         const paymentId:string = setupResult.setupIntent?.payment_method?.toString()!;
 
         if (!setupResult.setupIntent) {
@@ -42,9 +56,11 @@ export default function WalletPage() {
         }
 
         console.log("Updating payment information...");
-        getPaymentInformation( customerId, paymentId).then(r => {
+        getPaymentInformation( customerId, paymentId).then(paymentInfo => {
+            setCreditCardInfo(paymentInfo);
             setIsPaymentMethodSaved(true);
         });
+        setLoading(false);
     }
     
 
@@ -54,19 +70,18 @@ export default function WalletPage() {
                 <div className="self-start ml-4 mb-4">
                     <Link href="/" className="text-blue-500 hover:text-blue-700">Back</Link>
                 </div>
-                <div className="text-center mb-4">
+                {isPaymentMethodSaved && <div className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 tx text-center">
                     <button onClick={clearPaymentMethod}>Clear Wallet</button>
-                </div>
+                </div>}
                 <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                    {isPaymentMethodSaved ? (
+                    {isPaymentMethodSaved && (
                         <div className="flex items-center space-x-2 mb-4">
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 className="h-6 w-6 text-green-500"
                                 fill="none"
                                 viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
+                                stroke="currentColor">
                                 <path
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -75,11 +90,15 @@ export default function WalletPage() {
                                 />
                             </svg>
                             <span className="text-green-500">Payment Method Saved</span>
+                            <CardComponent creditCardInfo={creditCardInfo} />
                         </div>
-                    ) : (
-                        <p className="mb-4 text-gray-700">No Payment Method Saved</p>
                     )}
-                    <CreditCardForm updatePaymentInformation={updatePaymentInformation}/>
+                    {!isPaymentMethodSaved && (
+                        <div>
+                            <p className="mb-4 text-gray-700 text-center">No Payment Method Saved</p>
+                            <CreditCardForm updatePaymentInformation={updatePaymentInformation}/>
+                        </div>
+                    )}
                 </div>
             </div>
         </Elements>
@@ -118,6 +137,12 @@ async function getPaymentInformation(customerId: string, paymentMethodId: string
         + '&customer_id=' + customerId);
 
     const paymentInformation = await response.json();
-    console.log('Payment information:', paymentInformation);
+    console.log("Payment information:", paymentInformation);
+    return {
+        cardNumber: "**** **** **** " + paymentInformation.card.last4,
+        cardType: paymentInformation.card.brand,
+        expirationYear: paymentInformation.card.exp_year,
+        billingName: paymentInformation.billing_details.name
+    };
 }
 
