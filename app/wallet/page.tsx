@@ -1,34 +1,51 @@
 'use client'
 import React, { useState, useEffect } from 'react';
-import Link from 'next/link';  // Import the Link component
+import Link from 'next/link';
 import { Elements } from '@stripe/react-stripe-js';
 import CreditCardForm from '../components/CreditCardForm';
 import { StripeCardElementChangeEvent, loadStripe } from '@stripe/stripe-js';
+import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
+import {Stripe} from "stripe";
 
 export default function WalletPage() {
     const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(false);
     const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!);
-    console.log("WalletPage rendered");
-
 
     useEffect(() => {
         const paymentMethodId = localStorage.getItem('payment_token_id');
         setIsPaymentMethodSaved(!!paymentMethodId);
-        createCustomer();
+        createCustomerAndSetupIntent().then(r => {
+            console.log("Customer ID:", localStorage.getItem('customer_id'));
+        });
     }, []);
 
     const clearPaymentMethod = () => {
         // clear local storage
         localStorage.removeItem('payment_token_id');
         localStorage.removeItem('customer_id');
-        localStorage.removeItem('custumer_client_secret');
+        localStorage.removeItem('customer_client_secret');
         setIsPaymentMethodSaved(false);
     };
 
-    const updatePaymentInformation = (event:StripeCardElementChangeEvent) => {
-        console.log("Got this event:", event);
-        setIsPaymentMethodSaved(true);
-    };
+    function updatePaymentInformation(setupResult: SetupIntentResult) {
+        const paymentId:string = setupResult.setupIntent?.payment_method?.toString()!;
+
+        if (!setupResult.setupIntent) {
+            console.error("Setup intent is null.");
+            return;
+        }
+
+        const customerId = localStorage.getItem('customer_id');
+        if (!customerId) {
+            console.error("Customer ID is null.");
+            return;
+        }
+
+        console.log("Updating payment information...");
+        getPaymentInformation( customerId, paymentId).then(r => {
+            setIsPaymentMethodSaved(true);
+        });
+    }
     
 
     return (
@@ -62,20 +79,17 @@ export default function WalletPage() {
                     ) : (
                         <p className="mb-4 text-gray-700">No Payment Method Saved</p>
                     )}
-                    <CreditCardForm updatePaymentInformation={updatePaymentInformation} />
+                    <CreditCardForm updatePaymentInformation={updatePaymentInformation}/>
                 </div>
             </div>
         </Elements>
     );
 }
 
-async function createCustomer() {
-    console.log("createCustomer function called");
+async function createCustomerAndSetupIntent() {
 
     // Check if customer already exists in local storage
     const customerId = localStorage.getItem('customer_id');
-    
-    console.log("Retrieved customer_id from localStorage:", customerId);
 
     if (customerId && customerId !== 'undefined') {
         console.log('Customer already exists:', customerId);
@@ -86,15 +100,24 @@ async function createCustomer() {
         method: 'POST',
     });
 
-    let customer = await response.json();
-    console.log('Response from server:', customer);
-    
-    if(!customer.customer_id){
-        console.error("Server did not return a valid customer id");
+    if (!response.ok) {
+        console.error("Error creating customer:", response.statusText);
         return;
     }
 
+    let customer = await response.json();
     localStorage.setItem('customer_id', customer.customer_id);
-    localStorage.setItem('custumer_client_secret', customer.custumer_client_secret);
+    localStorage.setItem('customer_client_secret', customer.customer_client_secret);
+    console.log('Created customer with ID:', customer.customer_id);
+}
+
+async function getPaymentInformation(customerId: string, paymentMethodId: string) {
+    console.log("Getting payment information for customer:", customerId, "and payment method:", paymentMethodId);
+    const response = await fetch('/api/get-payment-information'
+        + '?payment_method_id=' + paymentMethodId
+        + '&customer_id=' + customerId);
+
+    const paymentInformation = await response.json();
+    console.log('Payment information:', paymentInformation);
 }
 

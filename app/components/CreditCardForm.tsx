@@ -1,6 +1,8 @@
 import React from 'react';
 import { CardElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { StripeCardElementChangeEvent } from '@stripe/stripe-js';
+import {generate} from "random-words";
+import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {
@@ -21,7 +23,7 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 type CreditCardFormProps = {
-    updatePaymentInformation: (event:StripeCardElementChangeEvent) => void;
+    updatePaymentInformation: (setupResult: SetupIntentResult ) => void;
 };
 
 export default function CreditCardForm({ updatePaymentInformation }: CreditCardFormProps) {
@@ -42,13 +44,24 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         return;
     }
 
-    const result = await stripePromise.createToken(cardElement);
+    const result = await stripePromise.confirmCardSetup(
+        localStorage.getItem('customer_client_secret')!,
+        {
+            payment_method: {
+                card: cardElement,
+                billing_details: {
+                    name: 'John ' + generate() + ' Doe',
+                },
+            },
+        }
+    );
+
     if (result.error) {
-        console.error(result.error.message);
-    } else {
-        localStorage.setItem('payment_token_id', result.token.id);
-        console.log('Payment Method ID saved locally:', result.token.id);
+        console.error("Error confirming card setup: ", result.error.message);
+        return;
     }
+
+    updatePaymentInformation(result);
   };
 
   return (
@@ -59,7 +72,7 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         </div>
         <button 
           type="submit" 
-          disabled={!stripePromise} 
+          disabled={!stripePromise}
           className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
           Save Card
         </button>
