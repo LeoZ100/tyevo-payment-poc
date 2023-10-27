@@ -3,8 +3,6 @@ import Cards from 'react-credit-cards-2';
 import 'react-credit-cards-2/dist/es/styles-compiled.css';
 
 
-
-
 type CardComponentProps = {
     creditCardInfo: {
         cardNumber: string;

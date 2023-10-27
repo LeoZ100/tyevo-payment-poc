@@ -22,7 +22,7 @@ const CARD_ELEMENT_OPTIONS = {
 };
 
 type CreditCardFormProps = {
-    updatePaymentInformation: (setupResult: SetupIntentResult ) => void;
+    updatePaymentInformation: (paymentMethodId: string ) => void;
 };
 
 export default function CreditCardForm({ updatePaymentInformation }: CreditCardFormProps) {
@@ -62,7 +62,8 @@ const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
 
     localStorage.setItem('payment_token_id', result.setupIntent?.payment_method?.toString()!);
     console.log("Card information updated and saved.");
-    updatePaymentInformation(result);
+    const paymendMethodId = result.setupIntent?.payment_method?.toString();
+    updatePaymentInformation(paymendMethodId!);
   };
 
   return (

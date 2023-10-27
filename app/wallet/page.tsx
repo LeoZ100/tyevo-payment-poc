@@ -1,51 +1,37 @@
 'use client'
 import React, {useEffect, useState} from 'react';
 import Link from 'next/link';
-import {Elements} from '@stripe/react-stripe-js';
+import { Elements } from '@stripe/react-stripe-js';
 import CreditCardForm from '../components/CreditCardForm';
-import {loadStripe} from '@stripe/stripe-js';
-import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
-import {useRouter} from "next/navigation";
+import { loadStripe } from '@stripe/stripe-js';
+import { useRouter } from "next/navigation";
 import CardComponent from "@/app/components/CardComponent";
+
+
+type CreditCardInfoType = {
+    cardNumber: string;
+    cardType: string;
+    expirationYear: string;
+    billingName: string;
+} | null;
 
 export default function WalletPage() {
     const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(false);
-    const [creditCardInfo, setCreditCardInfo] = useState({
-        cardNumber: '',
-        cardType: '',
-        expirationYear: '',
-        billingName: ''
-    });
-    const [loading, setLoading] = useState(false)
-    const router = useRouter();  // useRouter hook initialization
+    const [creditCardInfo, setCreditCardInfo] = useState<CreditCardInfoType>(null);
+    const router = useRouter();
 
-
-    // Stripe
     const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!);
 
     useEffect(() => {
         const paymentMethodId = localStorage.getItem('payment_token_id');
         setIsPaymentMethodSaved(!!paymentMethodId);
-        createCustomerAndSetupIntent().then(r => {
-            console.log("Customer ID:", localStorage.getItem('customer_id'));
-        });
+        createCustomerAndSetupIntent();
     }, []);
 
-    const clearPaymentMethod = () => {
-        // clear local storage
-        localStorage.removeItem('payment_token_id');
-        localStorage.removeItem('customer_id');
-        localStorage.removeItem('customer_client_secret');
-        setIsPaymentMethodSaved(false);
-        router.back();
-    };
+    async function updatePaymentInformation(paymentMethodId: string) {
 
-    function updatePaymentInformation(setupResult: SetupIntentResult) {
-        setLoading(true);
-        const paymentId:string = setupResult.setupIntent?.payment_method?.toString()!;
-
-        if (!setupResult.setupIntent) {
-            console.error("Setup intent is null.");
+        if (!paymentMethodId) {
+            console.error("Payment method ID is null.");
             return;
         }
 
@@ -55,48 +41,50 @@ export default function WalletPage() {
             return;
         }
 
-        console.log("Updating payment information...");
-        getPaymentInformation( customerId, paymentId).then(paymentInfo => {
-            setCreditCardInfo(paymentInfo);
-            setIsPaymentMethodSaved(true);
-        });
-        setLoading(false);
+        const paymentInfo = await getPaymentInformation(customerId, paymentMethodId);
+        setCreditCardInfo(paymentInfo);
+        setIsPaymentMethodSaved(true);
     }
-    
+
+    const clearPaymentMethod = () => {
+        ['payment_token_id', 'customer_id', 'customer_client_secret'].forEach(item => localStorage.removeItem(item));
+        setIsPaymentMethodSaved(false);
+        router.back();
+    };
+
+    if (isPaymentMethodSaved && !creditCardInfo) {
+        const paymentMethodId = localStorage.getItem('payment_token_id');
+        updatePaymentInformation(paymentMethodId!);
+    }
 
     return (
         <Elements stripe={stripePromise}>
             <div className="min-h-screen flex flex-col items-center justify-center">
                 <div className="self-start ml-4 mb-4">
-                    <Link href="/" className="text-blue-500 hover:text-blue-700">Back</Link>
+                    <Link href="/">Back</Link>
                 </div>
-                {isPaymentMethodSaved && <div className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 tx text-center">
-                    <button onClick={clearPaymentMethod}>Clear Wallet</button>
-                </div>}
+
+                {isPaymentMethodSaved && (
+                    <div className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 text-center">
+                        <button onClick={clearPaymentMethod}>Clear Wallet</button>
+                    </div>
+                )}
+
                 <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-                    {isPaymentMethodSaved && (
-                        <div className="flex items-center space-x-2 mb-4">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-6 w-6 text-green-500"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor">
-                                <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    strokeWidth={2}
-                                    d="M5 13l4 4L19 7"
-                                />
-                            </svg>
-                            <span className="text-green-500">Payment Method Saved</span>
+                    {(isPaymentMethodSaved && creditCardInfo) ? (
+                        <div>
+                            <div className="flex items-center space-x-2 mb-4">
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                </svg>
+                                <span className="text-green-500">Payment Method Saved</span>
+                            </div>
                             <CardComponent creditCardInfo={creditCardInfo} />
                         </div>
-                    )}
-                    {!isPaymentMethodSaved && (
+                    ) : (
                         <div>
                             <p className="mb-4 text-gray-700 text-center">No Payment Method Saved</p>
-                            <CreditCardForm updatePaymentInformation={updatePaymentInformation}/>
+                            <CreditCardForm updatePaymentInformation={updatePaymentInformation} />
                         </div>
                     )}
                 </div>
