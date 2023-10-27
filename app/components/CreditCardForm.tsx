@@ -1,7 +1,6 @@
 import React from 'react';
 import {CardElement, useElements, useStripe} from '@stripe/react-stripe-js';
 import {generate} from "random-words";
-import {SetupIntentResult} from "@stripe/stripe-js/types/stripe-js/stripe";
 
 const CARD_ELEMENT_OPTIONS = {
   style: {

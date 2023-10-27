@@ -1,11 +1,12 @@
 'use client'
 import React, {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { Elements } from '@stripe/react-stripe-js';
+import {Elements} from '@stripe/react-stripe-js';
 import CreditCardForm from '../components/CreditCardForm';
-import { loadStripe } from '@stripe/stripe-js';
-import { useRouter } from "next/navigation";
+import {loadStripe} from '@stripe/stripe-js';
+import {useRouter} from "next/navigation";
 import CardComponent from "@/app/components/CardComponent";
+import {LoadingComponent} from "@/app/components/LoadingComponent";
 
 
 type CreditCardInfoType = {
@@ -16,8 +17,9 @@ type CreditCardInfoType = {
 } | null;
 
 export default function WalletPage() {
-    const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(false);
+    const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(true);
     const [creditCardInfo, setCreditCardInfo] = useState<CreditCardInfoType>(null);
+    const [loading, setLoading] = useState(false);
     const router = useRouter();
 
     const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!);
@@ -26,6 +28,9 @@ export default function WalletPage() {
         const paymentMethodId = localStorage.getItem('payment_token_id');
         setIsPaymentMethodSaved(!!paymentMethodId);
         createCustomerAndSetupIntent();
+        if (isPaymentMethodSaved && !creditCardInfo) {
+            updatePaymentInformation(paymentMethodId!);
+        }
     }, []);
 
     async function updatePaymentInformation(paymentMethodId: string) {
@@ -41,9 +46,11 @@ export default function WalletPage() {
             return;
         }
 
+        setLoading(true);
         const paymentInfo = await getPaymentInformation(customerId, paymentMethodId);
         setCreditCardInfo(paymentInfo);
         setIsPaymentMethodSaved(true);
+        setLoading(false);
     }
 
     const clearPaymentMethod = () => {
@@ -52,16 +59,15 @@ export default function WalletPage() {
         router.back();
     };
 
-    if (isPaymentMethodSaved && !creditCardInfo) {
-        const paymentMethodId = localStorage.getItem('payment_token_id');
-        updatePaymentInformation(paymentMethodId!);
+    if (loading) {
+        return (<LoadingComponent/>);
     }
 
     return (
         <Elements stripe={stripePromise}>
             <div className="min-h-screen flex flex-col items-center justify-center">
-                <div className="self-start ml-4 mb-4">
-                    <Link href="/">Back</Link>
+                <div className="self-start bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
+                    <Link href="/">⬅️ Back</Link>
                 </div>
 
                 {isPaymentMethodSaved && (
