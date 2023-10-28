@@ -24,23 +24,21 @@ export async function POST(request: Request) {
             });
 
             // If you reach this point, the payment was successful
-            return new Response(JSON.stringify({status: 'success', paymentIntentId: paymentIntent.id}), {status: 200});
+            return new Response(JSON.stringify({message: 'success', paymentIntentId: paymentIntent.id}), {status: 200});
 
         } catch (err: any) {
             // Handle the case where authentication is required
             if (err.code === 'authentication_required') {
                 // Retrieve the PaymentIntent to handle authentication on the client side
                 const paymentIntentRetrieved = await stripe.paymentIntents.retrieve(err.raw.payment_intent.id);
-                return new Response(JSON.stringify({
-                    status: 'requires_authentication'
-                }), {status: 402});
+                return new Response(JSON.stringify({message: 'requires_authentication'}), {status: 402});
             }
 
             // Handle other errors
-            return new Response(err.message, {status: 500});
+            return new Response(JSON.stringify({message: err.message}), {status: 500});
         }
 
     } catch (error: any) {
-        return new Response(error.message, {status: 500});
+        return new Response(JSON.stringify({message: error.message}), {status: 500});
     }
 }

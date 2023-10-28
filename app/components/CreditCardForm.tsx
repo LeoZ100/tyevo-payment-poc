@@ -25,7 +25,8 @@ type CreditCardFormProps = {
 };
 
 export default function CreditCardForm({updatePaymentInformation}: CreditCardFormProps) {
-
+    const [paymentMethodDeclined, setPaymentMethodDeclined] = React.useState(false);
+    const [paymentMethodDeclinedMessage, setPaymentMethodDeclinedMessage] = React.useState('');
     const stripePromise = useStripe();
     const elements = useElements();
 
@@ -56,6 +57,8 @@ export default function CreditCardForm({updatePaymentInformation}: CreditCardFor
 
         if (result.error) {
             console.error("Error confirming card setup: ", result.error.message);
+            setPaymentMethodDeclined(true);
+            setPaymentMethodDeclinedMessage(result.error.message ? result.error.message : 'Your card was declined, contact your bank for more information.');
             return;
         }
 
@@ -78,6 +81,13 @@ export default function CreditCardForm({updatePaymentInformation}: CreditCardFor
                     Save Card
                 </button>
             </form>
+            {
+                paymentMethodDeclined && (
+                    <div className="bg-red-500 text-white px-4 py-2 rounded-lg mt-4">
+                        {paymentMethodDeclinedMessage}
+                    </div>
+                )
+            }
         </div>
     );
 }

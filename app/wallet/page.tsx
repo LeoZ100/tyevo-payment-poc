@@ -54,9 +54,10 @@ export default function WalletPage() {
     }
 
     const clearPaymentMethod = () => {
-        ['payment_token_id', 'customer_id', 'customer_client_secret'].forEach(item => localStorage.removeItem(item));
+        ['payment_token_id'].forEach(item => localStorage.removeItem(item));
         setIsPaymentMethodSaved(false);
-        router.back();
+        setCreditCardInfo(null);
+        createCustomerAndSetupIntent();
     };
 
     if (loading) {
@@ -105,9 +106,11 @@ async function createCustomerAndSetupIntent() {
 
     // Check if customer already exists in local storage
     const customerId = localStorage.getItem('customer_id');
+    const paymentMethodId = localStorage.getItem('payment_token_id');
+    const paymentMethodSaved = !!paymentMethodId
 
-    if (customerId && customerId !== 'undefined') {
-        console.log('Customer already exists:', customerId);
+    if (customerId && paymentMethodSaved) {
+        console.log("Customer with Payment Method already exists.");
         return;
     }
 

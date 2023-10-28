@@ -10,6 +10,9 @@ export default function RidePage() {
     const [smokeTrail, setSmokeTrail] = useState('');
     const [rideComplete, setRideComplete] = useState(false);
     const [receiptId, setReceiptId] = useState('');
+    const [paymentFailed, setPaymentFailed] = useState(false);
+    const [paymentFailedMessage, setPaymentFailedMessage] = useState('');
+
     const customerId = typeof window !== 'undefined' ? localStorage.getItem('customer_id') : null;
     const paymentMethodId = typeof window !== 'undefined' ? localStorage.getItem('payment_token_id') : null;
 
@@ -48,9 +51,9 @@ export default function RidePage() {
             });
 
             if (!response.ok) {
-                throw new Error('Server response was not ok.');
+                setPaymentFailed(true);
+                setPaymentFailedMessage((await response.json()).message);
             }
-
             setRideComplete(true);
             const paymentIntentId = (await response.json()).paymentIntentId;
             const idFromIntent = getUuidByString(paymentIntentId);
@@ -82,7 +85,7 @@ export default function RidePage() {
                 <Link href="/">⬅️ Back</Link>
             </div>
             {
-                rideComplete && (
+                (rideComplete && !paymentFailed) && (
                     <div className="bg-white p-8 mt-8 rounded-lg shadow-lg w-full max-w-md text-center">
                         <h2 className="text-xl font-bold mb-4">Ride Complete!</h2>
                         <p>Your card has been charged successfully.</p>
@@ -90,6 +93,17 @@ export default function RidePage() {
                                                href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for
                             transaction details.</p>
                         <p>Receive No.: <span className="font-bold">{receiptId}</span></p>
+                    </div>
+                )
+            }
+            {
+                paymentFailed && (
+                    // make the card lighty red and make sure text fits in the card (length might a bit long)
+                    // error message should be in the card
+                    <div className="bg-red-100 p-8 mt-8 rounded-lg shadow-lg w-full max-w-md text-center">
+                        <h2 className="text-xl font-bold mb-4">Payment Failed!</h2>
+                        <p className="text-xs">{paymentFailedMessage}</p>
+                        <p>Is amount below minimum? <span className="font-extrabold">USD $0.50<span></span></span></p>
                     </div>
                 )
             }
@@ -133,7 +147,11 @@ export default function RidePage() {
                 <button
                     className="w-full bg-green-500 text-white px-4 py-2 rounded-lg hover:bg-green-600 disabled:bg-gray-300"
                     disabled={loading || formAmount === 0}
-                    onClick={initiateRideAnimation}>
+                    onClick={() => {
+                        setPaymentFailed(false);
+                        setPaymentFailedMessage('');
+                        initiateRideAnimation();
+                    }}>
                     Take Ride
                 </button>
             </div>
