@@ -1,6 +1,7 @@
 'use client';
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import Link from "next/link";
+import getUuidByString from "uuid-by-string";
 
 export default function RidePage() {
     const [loading, setLoading] = useState(false);
@@ -8,6 +9,7 @@ export default function RidePage() {
     const [currency, setCurrency] = useState('usd');
     const [smokeTrail, setSmokeTrail] = useState('');
     const [rideComplete, setRideComplete] = useState(false);
+    const [receiptId, setReceiptId] = useState('');
     const customerId = typeof window !== 'undefined' ? localStorage.getItem('customer_id') : null;
     const paymentMethodId = typeof window !== 'undefined' ? localStorage.getItem('payment_token_id') : null;
 
@@ -50,6 +52,9 @@ export default function RidePage() {
             }
 
             setRideComplete(true);
+            const paymentIntentId = (await response.json()).paymentIntentId;
+            const idFromIntent = getUuidByString(paymentIntentId);
+            setReceiptId(idFromIntent);
 
         } catch (err) {
             console.error(err);
@@ -61,6 +66,8 @@ export default function RidePage() {
     function getStripe(amountAtMinimumCurrencyUnit: number, currency: string): number {
         switch (currency) {
             case 'usd':
+                return amountAtMinimumCurrencyUnit * 100;
+            case 'dop':
                 return amountAtMinimumCurrencyUnit * 100;
             default:
                 return amountAtMinimumCurrencyUnit;
@@ -80,6 +87,7 @@ export default function RidePage() {
                         <h2 className="text-xl font-bold mb-4">Ride Complete!</h2>
                         <p>Your card has been charged successfully.</p>
                         <p>Please check the <a className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for transaction details.</p>
+                        <p>Receive No.: <span className="font-bold">{receiptId}</span></p>
                     </div>
                 )
             }

@@ -17,7 +17,8 @@
     "react-credit-cards-2": "^1.0.1",
     "react-dom": "^18",
     "react-loader-spinner": "^5.4.5",
-    "stripe": "^14.1.0"
+    "stripe": "^14.1.0",
+    "uuid-by-string": "^4.0.0"
   },
   "devDependencies": {
     "@types/node": "^20",
