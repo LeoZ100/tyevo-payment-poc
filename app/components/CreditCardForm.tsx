@@ -27,6 +27,7 @@ type CreditCardFormProps = {
 export default function CreditCardForm({updatePaymentInformation}: CreditCardFormProps) {
     const [paymentMethodDeclined, setPaymentMethodDeclined] = React.useState(false);
     const [paymentMethodDeclinedMessage, setPaymentMethodDeclinedMessage] = React.useState('');
+    const [loading, setLoading] = React.useState(false);
     const stripePromise = useStripe();
     const elements = useElements();
 
@@ -42,7 +43,8 @@ export default function CreditCardForm({updatePaymentInformation}: CreditCardFor
             console.error('Card Element not found.');
             return;
         }
-
+        
+        setLoading(true);
         const result = await stripePromise.confirmCardSetup(
             localStorage.getItem('customer_client_secret')!,
             {
@@ -54,6 +56,7 @@ export default function CreditCardForm({updatePaymentInformation}: CreditCardFor
                 },
             }
         );
+        setLoading(false);
 
         if (result.error) {
             console.error("Error confirming card setup: ", result.error.message);
@@ -76,7 +79,7 @@ export default function CreditCardForm({updatePaymentInformation}: CreditCardFor
                 </div>
                 <button
                     type="submit"
-                    disabled={!stripePromise}
+                    disabled={loading}
                     className="w-full bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">
                     Save Card
                 </button>

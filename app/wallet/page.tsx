@@ -4,7 +4,6 @@ import Link from 'next/link';
 import {Elements} from '@stripe/react-stripe-js';
 import CreditCardForm from '../components/CreditCardForm';
 import {loadStripe} from '@stripe/stripe-js';
-import {useRouter} from "next/navigation";
 import CardComponent from "@/app/components/CardComponent";
 import {LoadingComponent} from "@/app/components/LoadingComponent";
 
@@ -20,9 +19,7 @@ export default function WalletPage() {
     const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(true);
     const [creditCardInfo, setCreditCardInfo] = useState<CreditCardInfoType>(null);
     const [loading, setLoading] = useState(false);
-    const router = useRouter();
-
-    const stripePromise = loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!);
+    const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!))
 
     useEffect(() => {
         const paymentMethodId = localStorage.getItem('payment_token_id');

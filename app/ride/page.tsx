@@ -92,14 +92,12 @@ export default function RidePage() {
                         <p>Please check the <a className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
                                                href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for
                             transaction details.</p>
-                        <p>Receive No.: <span className="font-bold">{receiptId}</span></p>
+                        <p>Receipt No.: <span className="font-bold text-xs">{receiptId}</span></p>
                     </div>
                 )
             }
             {
                 paymentFailed && (
-                    // make the card lighty red and make sure text fits in the card (length might a bit long)
-                    // error message should be in the card
                     <div className="bg-red-100 p-8 mt-8 rounded-lg shadow-lg w-full max-w-md text-center">
                         <h2 className="text-xl font-bold mb-4">Payment Failed!</h2>
                         <p className="text-xs">{paymentFailedMessage}</p>
@@ -123,7 +121,6 @@ export default function RidePage() {
                             disabled={loading}
                             value={formAmount || ''}
                             onChange={(e) => {
-                                setRideComplete(false);
                                 setFormAmount(+e.target.value)
                             }}
                             className="mt-1 p-2 w-full border rounded-md"
@@ -150,6 +147,7 @@ export default function RidePage() {
                     onClick={() => {
                         setPaymentFailed(false);
                         setPaymentFailedMessage('');
+                        setRideComplete(false);
                         initiateRideAnimation();
                     }}>
                     Take Ride

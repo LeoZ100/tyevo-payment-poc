@@ -19,7 +19,7 @@ export default function CardComponent({creditCardInfo}: CardComponentProps) {
                expiry={"**/" + creditCardInfo.expirationYear}
                name={creditCardInfo.billingName}
                number={creditCardInfo.cardNumber}
-               issuer={creditCardInfo.cardType}
+               issuer={creditCardInfo.cardType == 'amex' ? 'american-express' : creditCardInfo.cardType}
                preview={true}/>
     );
 }
