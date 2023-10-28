@@ -20,6 +20,6 @@ export default function CardComponent({creditCardInfo}: CardComponentProps) {
                name={creditCardInfo.billingName}
                number={creditCardInfo.cardNumber}
                issuer={creditCardInfo.cardType}
-                preview={true}/>
+               preview={true}/>
     );
 }

@@ -80,17 +80,19 @@ export default function WalletPage() {
                     {(isPaymentMethodSaved && creditCardInfo) ? (
                         <div>
                             <div className="flex items-center space-x-2 mb-4">
-                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-green-500" fill="none"
+                                     viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2}
+                                          d="M5 13l4 4L19 7"/>
                                 </svg>
                                 <span className="text-green-500">Payment Method Saved</span>
                             </div>
-                            <CardComponent creditCardInfo={creditCardInfo} />
+                            <CardComponent creditCardInfo={creditCardInfo}/>
                         </div>
                     ) : (
                         <div>
                             <p className="mb-4 text-gray-700 text-center">No Payment Method Saved</p>
-                            <CreditCardForm updatePaymentInformation={updatePaymentInformation} />
+                            <CreditCardForm updatePaymentInformation={updatePaymentInformation}/>
                         </div>
                     )}
                 </div>

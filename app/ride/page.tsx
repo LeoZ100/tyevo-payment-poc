@@ -86,7 +86,9 @@ export default function RidePage() {
                     <div className="bg-white p-8 mt-8 rounded-lg shadow-lg w-full max-w-md text-center">
                         <h2 className="text-xl font-bold mb-4">Ride Complete!</h2>
                         <p>Your card has been charged successfully.</p>
-                        <p>Please check the <a className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500" href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for transaction details.</p>
+                        <p>Please check the <a className="bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
+                                               href='https://dashboard.stripe.com/test/payments'>Stripe Console</a> for
+                            transaction details.</p>
                         <p>Receive No.: <span className="font-bold">{receiptId}</span></p>
                     </div>
                 )
@@ -98,7 +100,8 @@ export default function RidePage() {
             <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
                 <form className="mb-4" onSubmit={e => e.preventDefault()}>
                     <div className="mb-2">
-                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount to Charge</label>
+                        <label htmlFor="amount" className="block text-sm font-medium text-gray-700">Amount to
+                            Charge</label>
                         <input
                             id="amount"
                             min="0"
