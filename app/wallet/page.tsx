@@ -19,7 +19,7 @@ export default function WalletPage() {
     const [isPaymentMethodSaved, setIsPaymentMethodSaved] = useState(true);
     const [creditCardInfo, setCreditCardInfo] = useState<CreditCardInfoType>(null);
     const [loading, setLoading] = useState(false);
-    const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_PUBLIC_STRIPE_PUBLIC_KEY!))
+    const [stripePromise, setStripePromise] = useState(() => loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!))
 
     useEffect(() => {
         const paymentMethodId = localStorage.getItem('payment_token_id');
